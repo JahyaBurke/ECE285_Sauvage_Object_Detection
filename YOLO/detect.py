@@ -148,7 +148,7 @@ def detection(images='imgs',det='det',batch_size=1,confidence=0.5,nms_thresh=0.4
         
     output_recast = time.time()
     class_load = time.time()
-    colors = pkl.load(open("pallete", "rb"))
+    colors = pkl.load(open("YOLO/pallete", "rb"))
 
     draw = time.time()
 
