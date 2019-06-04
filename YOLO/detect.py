@@ -93,7 +93,7 @@ def detection(images='imgs',det='det',batch_size=1,confidence=0.5,nms_thresh=0.4
         with torch.no_grad():
             prediction = model(Variable(batch), CUDA)
 
-        prediction = write_results(prediction, confidence, num_classes, nms_conf = nms_thesh)
+        prediction = write_results(prediction, confidence, num_classes, nms_conf = nms_thresh)
 
         end = time.time()
 
