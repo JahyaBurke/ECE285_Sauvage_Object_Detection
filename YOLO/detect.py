@@ -17,7 +17,7 @@ import random
 
 
 
-def detection(images='imgs',det='det',batch_size=1,confidence=0.5,nms_thresh=0.4,cfgfile="YOLO/cfg/yolov3.cfg",weightsfile="YOLO/weightsfile",reso="416"):
+def detection(images='imgs',det='det',batch_size=1,confidence=0.5,nms_thresh=0.4,cfgfile="YOLO/cfg/yolov3.cfg",weightsfile="YOLO/yolov3.weights",reso="416"):
     start = 0
     CUDA = torch.cuda.is_available()
 
