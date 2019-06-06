@@ -1,0 +1,5 @@
+How to prepare environment:
+pip install --user cupy-cuda90
+pip install -r requirements.txt
+Download models from https://drive.google.com/drive/folders/1cQ27LIn-Rig4-Uayzy_gH5-cW-NRGVzY 
+Store models in model directory
