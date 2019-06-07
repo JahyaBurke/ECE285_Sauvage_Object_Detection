@@ -18,6 +18,22 @@ def get_test_input():
     img_ = Variable(img_)                     # Convert to Variable
     return img_
 
+def save_training(model,optimizer,train_loss,val_loss, epoch, fname):
+    states={
+        'state_dict': model.state_dict(),
+        'optimizer_dict': optimizer.state_dict(),
+        'train_loss': train_loss,
+        'val_loss': val_loss,
+        'epoch':epoch
+    }
+    torch.save(states,fname)
+
+def load_training(model,optimizer,fname):
+    checkpoint = torch.load(fname)
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_dict'])
+    return checkpoint['epoch'], checkpoint['train_loss'], checkpoint['val_loss']
+
 def parse_cfg(cfgfile):
     """
     Takes a configuration file
@@ -226,10 +242,12 @@ class Darknet(nn.Module):
         
         return detections
 
-    def deep_training(self,dataTrain,truthTrain,criterion,optimizer,num_epochs,batch_size):
+    def deep_training(self,dataTrain,truthTrain,criterion,optimizer,num_epochs,batch_size,fname=None):
+        if fname!=None:
+            curr_epoch,train_loss,val_loss = load_training(self,optimizer,fname)
         N = dataTrain.size()[0]
         NB = int(N/batch_size)
-        for epoch in range(num_epochs):
+        for epoch in range(num_epochs-curr_epoch-epoch):
             running_loss = 0
             shuffled_idx = np.arange(0,N)
             np.random.shuffle(shuffled_idx)
@@ -251,6 +269,8 @@ class Darknet(nn.Module):
                 # Compute and print statistics
                 with torch.no_grad():
                     running_loss += loss.item()
+                if fname!=None:
+                    save_training(self,optimizer,train_loss,val_loss,epoch,fname)
 
 
     def load_weights(self, weightfile):
