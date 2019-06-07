@@ -236,7 +236,7 @@ class Darknet(nn.Module):
             for k in range(NB):
                 minibatch_idx = shuffled_idx[np.arange(k*batch_size,(k+1)*batch_size)]
                 inputs = dataTrain[minibatch_idx,:,:,:]
-                truth = None #???
+                truth = truthTrain[minibatch_idx,:,:]
                 # Initialize the gradients to zero
                 optimizer.zero_grad()
                 # Forward propagation
