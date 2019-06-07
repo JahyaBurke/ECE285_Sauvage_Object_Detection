@@ -226,6 +226,32 @@ class Darknet(nn.Module):
         
         return detections
 
+    def deep_training(self,dataTrain,truthTrain,criterion,optimizer,num_epochs,batch_size):
+        N = dataTrain.size()[0]
+        NB = int(N/batch_size)
+        for epoch in range(num_epochs):
+            running_loss = 0
+            shuffled_idx = np.arange(0,N)
+            np.random.shuffle(shuffled_idx)
+            for k in range(NB):
+                minibatch_idx = shuffled_idx[np.arange(k*batch_size,(k+1)*batch_size)]
+                inputs = dataTrain[minibatch_idx,:,:,:]
+                truth = None #???
+                # Initialize the gradients to zero
+                optimizer.zero_grad()
+                # Forward propagation
+                outputs = self(inputs)
+                # Error evaluation
+                loss = criterion(outputs, truth)
+                # Back propagation
+                loss.backward()
+                # Parameter update
+                optimizer.step()
+                # Print averaged loss per minibatch every 100 mini-batches
+                # Compute and print statistics
+                with torch.no_grad():
+                    running_loss += loss.item()
+
 
     def load_weights(self, weightfile):
         #Open the weights file
