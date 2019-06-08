@@ -254,6 +254,7 @@ class AnchorTargetCreator(object):
         ious = bbox_iou(anchor, bbox)
         argmax_ious = ious.argmax(axis=1)
         max_ious = ious[np.arange(len(inside_index)), argmax_ious]
+        assert len(ious)!= 0
         gt_argmax_ious = ious.argmax(axis=0)
         gt_max_ious = ious[gt_argmax_ious, np.arange(ious.shape[1])]
         gt_argmax_ious = np.where(ious == gt_max_ious)[0]
@@ -394,21 +395,22 @@ class ProposalCreator:
         # Convert anchors into proposal via bbox transformations.
         # roi = loc2bbox(anchor, loc)
         roi = loc2bbox(anchor, loc)
-
+        
+        
         # Clip predicted boxes to image.
         roi[:, slice(0, 4, 2)] = np.clip(
             roi[:, slice(0, 4, 2)], 0, img_size[0])
         roi[:, slice(1, 4, 2)] = np.clip(
             roi[:, slice(1, 4, 2)], 0, img_size[1])
-
         # Remove predicted boxes with either height or width < threshold.
         min_size = self.min_size * scale
+
         hs = roi[:, 2] - roi[:, 0]
         ws = roi[:, 3] - roi[:, 1]
         keep = np.where((hs >= min_size) & (ws >= min_size))[0]
         roi = roi[keep, :]
         score = score[keep]
-
+        
         # Sort all (proposal, score) pairs by score from highest to lowest.
         # Take top pre_nms_topN (e.g. 6000).
         order = score.ravel().argsort()[::-1]
@@ -421,6 +423,7 @@ class ProposalCreator:
 
         # unNOTE: somthing is wrong here!
         # TODO: remove cuda.to_gpu
+
         keep = non_maximum_suppression(
             cp.ascontiguousarray(cp.asarray(roi)),
             thresh=self.nms_thresh)

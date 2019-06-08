@@ -12,7 +12,7 @@ from utils.vis_tool import Visualizer
 
 from utils.config import opt
 from torchnet.meter import ConfusionMeter, AverageValueMeter
-
+import numpy as np
 LossTuple = namedtuple('LossTuple',
                        ['rpn_loc_loss',
                         'rpn_cls_loss',
@@ -87,15 +87,17 @@ class FasterRCNNTrainer(nn.Module):
         Returns:
             namedtuple of 5 losses
         """
+        #print('Forward Pass')
         n = bboxes.shape[0]
         if n != 1:
             raise ValueError('Currently only batch size 1 is supported.')
 
         _, _, H, W = imgs.shape
         img_size = (H, W)
-
+        #print(type(imgs))
+        #print('Images = ', np.max(imgs.cpu().data.numpy()))
         features = self.faster_rcnn.extractor(imgs)
-
+        #print('Extracted Features = ', np.max(features.cpu().data.numpy()))
         rpn_locs, rpn_scores, rois, roi_indices, anchor = \
             self.faster_rcnn.rpn(features, img_size, scale)
 
@@ -109,12 +111,14 @@ class FasterRCNNTrainer(nn.Module):
         # Sample RoIs and forward
         # it's fine to break the computation graph of rois, 
         # consider them as constant input
+        
         sample_roi, gt_roi_loc, gt_roi_label = self.proposal_target_creator(
             roi,
             at.tonumpy(bbox),
             at.tonumpy(label),
             self.loc_normalize_mean,
             self.loc_normalize_std)
+
         # NOTE it's all zero because now it only support for batch=1 now
         sample_roi_index = t.zeros(len(sample_roi))
         roi_cls_loc, roi_score = self.faster_rcnn.head(
@@ -127,6 +131,7 @@ class FasterRCNNTrainer(nn.Module):
             at.tonumpy(bbox),
             anchor,
             img_size)
+
         gt_rpn_label = at.totensor(gt_rpn_label).long()
         gt_rpn_loc = at.totensor(gt_rpn_loc)
         rpn_loc_loss = _fast_rcnn_loc_loss(
