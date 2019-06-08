@@ -5,6 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import transforms
 import xml.etree.ElementTree as ET
+from PIL import Image
 
 # Other libraries for data manipulation and visualization
 import os
@@ -60,16 +61,18 @@ class PascalVOCDataloader(Dataset):
         --------
         - A tuple (image, bboxes, label)
         """
+        transform = transforms.Compose([transforms.ToTensor(),
+                                        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
         
         # Compose the path to the image file from the image_dir + image_name
         image_path = os.path.join(self.image_dir, self.image_filenames[ind])
         annotation_path = os.path.join(self.annotation_dir, self.annotation_filenames[ind])
         
         # Load the image
-        image = read_image(image_path)
-        #image = torch.from_numpy(img)[None]
+        #image = read_image(image_path)
+        image = Image.open(image_path)
+        image = transform(image)
         
-
         anno = ET.parse(annotation_path)
             
         bbox = list()
@@ -112,7 +115,7 @@ def create_split_loaders(data_dir, batch_size, seed=0,
     - val_loader: (DataLoader) The iterator for the validation set
     - test_loader: (DataLoader) The iterator for the test set
     """
-
+    
     # Get create a Dataset object
     dataset = PascalVOCDataloader(data_dir)
 

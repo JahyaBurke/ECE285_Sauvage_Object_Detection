@@ -1,14 +1,11 @@
-import numpy as np
 # import the necessary packages
 from collections import namedtuple
 import numpy as np
-import cv2
- 
+'''
 # define the `Detection` object
 Detection = namedtuple("Detection", ["image_path", "gt", "pred"])
-'''
 def intersects(x_coord,y_coord):
-    '''Both inputs are tuples of form (x0,x1,dx0,dx1)'''
+    ''Both inputs are tuples of form (x0,x1,dx0,dx1)''
     x = np.zeros(2)
     y = np.zeros(2)
     dx = np.zeros(2)
@@ -20,28 +17,28 @@ def intersects(x_coord,y_coord):
     return (np.abs(c_x-c_y) < (dx+dy)/2).all()
 '''
 def bb_intersection_over_union(boxA, boxB):
-	# determine the (x, y)-coordinates of the intersection rectangle
-	xA = max(boxA[0], boxB[0])
-	yA = max(boxA[1], boxB[1])
-	xB = min(boxA[2], boxB[2])
-	yB = min(boxA[3], boxB[3])
- 
-	# compute the area of intersection rectangle
-	interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
- 
-	# compute the area of both the prediction and ground-truth
-	# rectangles
-	boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
-	boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
- 
-	# compute the intersection over union by taking the intersection
-	# area and dividing it by the sum of prediction + ground-truth
-	# areas - the interesection area
-	iou = interArea / float(boxAArea + boxBArea - interArea)
- 
-	# return the intersection over union value
-	return iou
+    # determine the (x, y)-coordinates of the intersection rectangle
+    xA = np.maximum(boxA[0], boxB[0])
+    yA = np.maximum(boxA[1], boxB[1])
+    xB = np.minimum(boxA[2], boxB[2])
+    yB = np.minimum(boxA[3], boxB[3])
 
+    # compute the area of intersection rectangle
+    interArea = np.maximum(0, xB - xA + 1) * np.maximum(0, yB - yA + 1)
+
+    # compute the area of both the prediction and ground-truth
+    # rectangles
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+
+    # return the intersection over union value
+    return iou
+'''
 # define the list of example detections
 examples = [
 	Detection("image_0002.jpg", [39, 63, 203, 112], [54, 66, 198, 114]),
@@ -70,4 +67,4 @@ for detection in examples:
  
 	# show the output image
 	cv2.imshow("Image", image)
-	cv2.waitKey(0)
+	cv2.waitKey(0)'''

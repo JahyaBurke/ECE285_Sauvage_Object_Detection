@@ -87,7 +87,7 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
         Returns the Axes object with the plot for further tweaking.
 
     """
-
+    img = (img - np.min(img))*255/(np.max(img)-np.min(img)) 
     label_names = list(VOC_BBOX_LABEL_NAMES) + ['bg']
     # add for index `-1`
     if label is not None and not len(bbox) == len(label):
