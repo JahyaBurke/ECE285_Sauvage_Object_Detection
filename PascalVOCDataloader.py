@@ -78,12 +78,9 @@ class PascalVOCDataloader(Dataset):
         for obj in anno.findall('object'):
             bndbox_anno = obj.find('bndbox')
             # subtract 1 to make pixel indexes 0-based
-            #print([
-            #     bndbox_anno.find(tag).text
-            #    for tag in ('ymin', 'xmin', 'ymax', 'xmax')])
             try:
                 bbox.append([
-                    int(bndbox_anno.find(tag).text) - 1
+                    int(float(bndbox_anno.find(tag).text)) - 1
                     for tag in ('ymin', 'xmin', 'ymax', 'xmax')])
             except:
                 print(annotation_path)
