@@ -11,10 +11,12 @@ label_to_encoding = OrderedDict({ #Labels from Pascal data set
     'motorbike': 13,
     'person': 14,
     'sheep': 16,
-    'train': 18
+    'train': 18,
+    'unlabeled':255
     })
 
 coco_to_pascal = OrderedDict({ #Maps COCO from Pascal labels
+    0:255,
     1:14,
     2:1,
     3:6,
