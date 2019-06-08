@@ -55,9 +55,12 @@ class RegionProposalNetwork(nn.Module):
         self.conv1 = nn.Conv2d(in_channels, mid_channels, 3, 1, 1)
         self.score = nn.Conv2d(mid_channels, n_anchor * 2, 1, 1, 0)
         self.loc = nn.Conv2d(mid_channels, n_anchor * 4, 1, 1, 0)
-        normal_init(self.conv1, 0, 0.01)
-        normal_init(self.score, 0, 0.01)
-        normal_init(self.loc, 0, 0.01)
+        nn.init.xavier_normal_(self.conv1.weight)
+        nn.init.xavier_normal_(self.score.weight)
+        nn.init.xavier_normal_(self.loc.weight)
+        #normal_init(self.conv1, 0, 0.01)
+        #normal_init(self.score, 0, 0.01)
+        #normal_init(self.loc, 0, 0.01)
 
     def forward(self, x, img_size, scale=1.):
         """Forward Region Proposal Network.
@@ -102,11 +105,12 @@ class RegionProposalNetwork(nn.Module):
         anchor = _enumerate_shifted_anchor(
             np.array(self.anchor_base),
             self.feat_stride, hh, ww)
-
+        #print('x = ', np.max(x[0].cpu().data.numpy()))
         n_anchor = anchor.shape[0] // (hh * ww)
         h = F.relu(self.conv1(x))
-
+        #print('h = ', np.max(h[0].cpu().data.numpy()))
         rpn_locs = self.loc(h)
+        #print('First Locs = ', np.max(rpn_locs[0].cpu().data.numpy()))
         # UNNOTE: check whether need contiguous
         # A: Yes
         rpn_locs = rpn_locs.permute(0, 2, 3, 1).contiguous().view(n, -1, 4)

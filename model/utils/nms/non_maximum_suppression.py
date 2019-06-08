@@ -72,7 +72,7 @@ def non_maximum_suppression(bbox, thresh, score=None,
 
 def _non_maximum_suppression_gpu(bbox, thresh, score=None, limit=None):
     if len(bbox) == 0:
-        return cp.zeros((0,), dtype=np.int32)
+        return np.zeros((0,), dtype=np.int32) # Changed to np from cp
 
     n_bbox = bbox.shape[0]
 
@@ -88,6 +88,7 @@ def _non_maximum_suppression_gpu(bbox, thresh, score=None, limit=None):
     selec = order[selec]
     if limit is not None:
         selec = selec[:limit]
+ 
     return cp.asnumpy(selec)
 
 

@@ -2,6 +2,8 @@
 # PyTorch imports
 import torch
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
+from torchvision import transforms
 import xml.etree.ElementTree as ET
 
 # Other libraries for data manipulation and visualization
@@ -66,6 +68,7 @@ class PascalVOCDataloader(Dataset):
         # Load the image
         image = read_image(image_path)
         #image = torch.from_numpy(img)[None]
+        
 
         anno = ET.parse(annotation_path)
             
@@ -75,9 +78,15 @@ class PascalVOCDataloader(Dataset):
         for obj in anno.findall('object'):
             bndbox_anno = obj.find('bndbox')
             # subtract 1 to make pixel indexes 0-based
-            bbox.append([
-                int(bndbox_anno.find(tag).text) - 1
-                for tag in ('ymin', 'xmin', 'ymax', 'xmax')])
+            #print([
+            #     bndbox_anno.find(tag).text
+            #    for tag in ('ymin', 'xmin', 'ymax', 'xmax')])
+            try:
+                bbox.append([
+                    int(bndbox_anno.find(tag).text) - 1
+                    for tag in ('ymin', 'xmin', 'ymax', 'xmax')])
+            except:
+                print(annotation_path)
             name = obj.find('name').text.lower().strip()
             label.append(self.classes[name])
         bbox = np.stack(bbox).astype(np.float32)
@@ -85,3 +94,73 @@ class PascalVOCDataloader(Dataset):
 
         # Return the image and its label
         return (image, bbox, label)
+
+def create_split_loaders(data_dir, batch_size, seed=0, 
+                         p_val=0.1, p_test=0.2, shuffle=True, 
+                         show_sample=False):
+    """ Creates the DataLoader objects for the training, validation, and test sets. 
+
+    Params:
+    -------
+    - batch_size: (int) mini-batch size to load at a time
+    - seed: (int) Seed for random generator (use for testing/reproducibility)
+    - p_val: (float) Percent (as decimal) of dataset to use for validation
+    - p_test: (float) Percent (as decimal) of the dataset to split for testing
+    - shuffle: (bool) Indicate whether to shuffle the dataset before splitting
+    - show_sample: (bool) Plot a mini-example as a grid of the dataset
+
+    Returns:
+    --------
+    - train_loader: (DataLoader) The iterator for the training set
+    - val_loader: (DataLoader) The iterator for the validation set
+    - test_loader: (DataLoader) The iterator for the test set
+    """
+
+    # Get create a Dataset object
+    dataset = PascalVOCDataloader(data_dir)
+
+    # Dimensions and indices of training set
+    dataset_size = len(dataset)
+    all_indices = list(range(dataset_size))
+
+    # Shuffle dataset before dividing into training & test sets
+    if shuffle:
+        np.random.seed(seed)
+        np.random.shuffle(all_indices)
+    
+    # Create the validation split from the full dataset
+    val_split = int(np.floor(p_val * dataset_size))
+    train_ind, val_ind = all_indices[val_split :], all_indices[: val_split]
+    
+    # Separate a test split from the training dataset
+    test_split = int(np.floor(p_test * len(train_ind)))
+    train_ind, test_ind = train_ind[test_split :], train_ind[: test_split]
+    
+    # Use the SubsetRandomSampler as the iterator for each subset
+    sample_train = SubsetRandomSampler(train_ind)
+    sample_test = SubsetRandomSampler(test_ind)
+    sample_val = SubsetRandomSampler(val_ind)
+
+    num_workers = 0
+    pin_memory = False
+    # If CUDA is available
+    if torch.cuda.is_available():
+        num_workers = 1
+        pin_memory = True
+        
+    # Define the training, test, & validation DataLoaders
+    train_loader = DataLoader(dataset, batch_size=batch_size, 
+                              sampler=sample_train, num_workers=num_workers, 
+                              pin_memory=pin_memory)
+
+    test_loader = DataLoader(dataset, batch_size=batch_size, 
+                             sampler=sample_test, num_workers=num_workers, 
+                              pin_memory=pin_memory)
+
+    val_loader = DataLoader(dataset, batch_size=batch_size,
+                            sampler=sample_val, num_workers=num_workers, 
+                              pin_memory=pin_memory)
+
+    
+    # Return the training, validation, test DataLoader objects
+    return (train_loader, val_loader, test_loader)
