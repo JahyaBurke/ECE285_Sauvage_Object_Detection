@@ -254,7 +254,7 @@ class AnchorTargetCreator(object):
         ious = bbox_iou(anchor, bbox)
         argmax_ious = ious.argmax(axis=1)
         max_ious = ious[np.arange(len(inside_index)), argmax_ious]
-        assert len(ious)!=0:
+        assert len(ious)!= 0
         gt_argmax_ious = ious.argmax(axis=0)
         gt_max_ious = ious[gt_argmax_ious, np.arange(ious.shape[1])]
         gt_argmax_ious = np.where(ious == gt_max_ious)[0]
