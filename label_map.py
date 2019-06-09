@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict,defaultdict
 
 label_to_pascal = OrderedDict({ #Labels from Pascal data set
     'bicycle': 1,
@@ -15,7 +15,7 @@ label_to_pascal = OrderedDict({ #Labels from Pascal data set
     'unlabeled':255
     })
 
-coco_to_pascal = OrderedDict({ #Maps COCO from Pascal labels
+coco_to_pascal = defaultdict(lambda: 255,{ #Maps COCO from Pascal labels
     0:255,
     1:14,
     2:1,
@@ -30,10 +30,10 @@ coco_to_pascal = OrderedDict({ #Maps COCO from Pascal labels
     21:9,
 })
 
-pascal_to_coco = OrderedDict({v: k for k,v in coco_to_pascal.items()})
+pascal_to_coco = defaultdict(lambda: 0,{v: k for k,v in coco_to_pascal.items()})
 
-pascal_to_label = OrderedDict({v: k for k,v in label_to_encoding.items()})
+pascal_to_label = OrderedDict({v: k for k,v in label_to_pascal.items()})
 
 if __name__=="__main__":
-    for i, (k,v) in enumerate(label_to_encoding.items()):
+    for i, (k,v) in enumerate(label_to_pascal.items()):
         print(i,k,v)
