@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-label_to_encoding = OrderedDict({ #Labels from Pascal data set
+label_to_pascal = OrderedDict({ #Labels from Pascal data set
     'bicycle': 1,
     'bus': 5,
     'car': 6,
@@ -32,7 +32,7 @@ coco_to_pascal = OrderedDict({ #Maps COCO from Pascal labels
 
 pascal_to_coco = OrderedDict({v: k for k,v in coco_to_pascal.items()})
 
-encoding_to_label = OrderedDict({v: k for k,v in label_to_encoding.items()})
+pascal_to_label = OrderedDict({v: k for k,v in label_to_encoding.items()})
 
 if __name__=="__main__":
     for i, (k,v) in enumerate(label_to_encoding.items()):
