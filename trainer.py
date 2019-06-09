@@ -13,6 +13,7 @@ from utils.vis_tool import Visualizer
 from utils.config import opt
 from torchnet.meter import ConfusionMeter, AverageValueMeter
 import numpy as np
+import pandas as pd
 LossTuple = namedtuple('LossTuple',
                        ['rpn_loc_loss',
                         'rpn_cls_loss',
@@ -177,7 +178,7 @@ class FasterRCNNTrainer(nn.Module):
         self.update_meters(losses)
         return losses
 
-    def save(self, save_optimizer=False, save_path=None, **kwargs):
+    def save(self, train_loss, val_loss, save_optimizer=False, save_path=None, **kwargs):
         """serialize models include optimizer and other info
         return path where the model-file is stored.
 
@@ -189,13 +190,20 @@ class FasterRCNNTrainer(nn.Module):
         Returns:
             save_path(str): the path to save models.
         """
+        #print('Inside Trainer: ', train_loss, val_loss)
         save_dict = dict()
 
         save_dict['model'] = self.faster_rcnn.state_dict()
         save_dict['config'] = opt._state_dict()
         save_dict['other_info'] = kwargs
         save_dict['vis_info'] = self.vis.state_dict()
-
+        
+        loss_col = ['rpn_loc_loss',
+                        'rpn_cls_loss',
+                        'roi_loc_loss',
+                        'roi_cls_loss',
+                        'total_loss'
+                        ]
         if save_optimizer:
             save_dict['optimizer'] = self.optimizer.state_dict()
 
@@ -204,17 +212,30 @@ class FasterRCNNTrainer(nn.Module):
             save_path = 'checkpoints/fasterrcnn_%s' % timestr
             for k_, v_ in kwargs.items():
                 save_path += '_%s' % v_
-
+                
         save_dir = os.path.dirname(save_path)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
+            
+        if os.path.isfile(save_path+'_TrainLoss.pkl') and os.path.isfile(save_path+'_ValLoss.pkl'):
+            past_train_loss = pd.read_pickle(save_path+'_TrainLoss.pkl')
+            past_val_loss = pd.read_pickle(save_path+'_ValLoss.pkl')
+            new_train_loss = past_train_loss.append(train_loss, ignore_index=True)
+            new_val_loss = past_val_loss.append(val_loss, ignore_index=True)
+            new_train_loss.to_pickle(save_path+'_TrainLoss.pkl')
+            new_val_loss.to_pickle(save_path+'_ValLoss.pkl')
+            #print('Inside Trainer, Past: ', past_train_loss, past_val_loss)
+            #print('Inside Trainer, New: ', new_train_loss, new_val_loss)
+        else:
+            train_loss.to_pickle(save_path+'_TrainLoss.pkl')
+            val_loss.to_pickle(save_path+'_ValLoss.pkl')
 
-        t.save(save_dict, save_path)
+        t.save(save_dict, save_path+'.pth')
         self.vis.save([self.vis.env])
         return save_path
 
     def load(self, path, load_optimizer=True, parse_opt=False, ):
-        state_dict = t.load(path)
+        state_dict = t.load(path+'.pth')
         if 'model' in state_dict:
             self.faster_rcnn.load_state_dict(state_dict['model'])
         else:  # legacy way, for backward compatibility
@@ -224,7 +245,13 @@ class FasterRCNNTrainer(nn.Module):
             opt._parse(state_dict['config'])
         if 'optimizer' in state_dict and load_optimizer:
             self.optimizer.load_state_dict(state_dict['optimizer'])
-        return self
+        if os.path.isfile(path+'_TrainLoss.pkl') and os.path.isfile(path+'_ValLoss.pkl'):
+            past_train_loss = pd.read_pickle(path+'_TrainLoss.pkl')
+            past_val_loss = pd.read_pickle(path+'_ValLoss.pkl')
+        else:
+            past_train_loss = None
+            past_val_loss = None
+        return (past_train_loss, past_val_loss)
 
     def update_meters(self, losses):
         loss_d = {k: at.scalar(v) for k, v in losses._asdict().items()}

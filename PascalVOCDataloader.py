@@ -16,7 +16,7 @@ class PascalVOCDataloader(Dataset):
     """Custom Dataset class for the PASCAL VOC Image Dataset.
     """
     
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, pretrained=False):
         """
         Args:
         -----
@@ -30,7 +30,7 @@ class PascalVOCDataloader(Dataset):
         - annotation_filenames: List of file names for annotations
         - classes: A dictionary mapping each label name to an int between [0, 19]
         """
-        
+        self.pretrained = pretrained
         self.image_dir = os.path.join(data_dir+'JPEGImages')
         self.image_filenames = os.listdir(self.image_dir)
         self.image_filenames.sort()
@@ -69,9 +69,11 @@ class PascalVOCDataloader(Dataset):
         annotation_path = os.path.join(self.annotation_dir, self.annotation_filenames[ind])
         
         # Load the image
-        #image = read_image(image_path)
-        image = Image.open(image_path)
-        image = transform(image)
+        if (self.pretrained):
+            image = read_image(image_path)
+        else:
+            image = Image.open(image_path)
+            image = transform(image)
         
         anno = ET.parse(annotation_path)
             
@@ -95,7 +97,7 @@ class PascalVOCDataloader(Dataset):
         # Return the image and its label
         return (image, bbox, label)
 
-def create_split_loaders(data_dir, batch_size, seed=0, 
+def create_split_loaders(dataset, batch_size, seed=0, 
                          p_val=0.1, p_test=0.2, shuffle=True, 
                          show_sample=False):
     """ Creates the DataLoader objects for the training, validation, and test sets. 
@@ -117,7 +119,7 @@ def create_split_loaders(data_dir, batch_size, seed=0,
     """
     
     # Get create a Dataset object
-    dataset = PascalVOCDataloader(data_dir)
+    #dataset = PascalVOCDataloader(data_dir, )
 
     # Dimensions and indices of training set
     dataset_size = len(dataset)
