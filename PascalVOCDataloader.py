@@ -16,7 +16,7 @@ class PascalVOCDataloader(Dataset):
     """Custom Dataset class for the PASCAL VOC Image Dataset.
     """
     
-    def __init__(self, data_dir, pretrained=False):
+    def __init__(self, data_dir, normalize=False, YOLO=False):
         """
         Args:
         -----
@@ -30,7 +30,8 @@ class PascalVOCDataloader(Dataset):
         - annotation_filenames: List of file names for annotations
         - classes: A dictionary mapping each label name to an int between [0, 19]
         """
-        self.pretrained = pretrained
+        self.YOLO = YOLO
+        self.normalize = normalize
         self.image_dir = os.path.join(data_dir+'JPEGImages')
         self.image_filenames = os.listdir(self.image_dir)
         self.image_filenames.sort()
@@ -61,19 +62,24 @@ class PascalVOCDataloader(Dataset):
         --------
         - A tuple (image, bboxes, label)
         """
-        transform = transforms.Compose([transforms.ToTensor(),
+        if self.YOLO == False:
+            transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
-        
+        else:
+            transform = transforms.Compose([transforms.Resize((416,416)),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         # Compose the path to the image file from the image_dir + image_name
         image_path = os.path.join(self.image_dir, self.image_filenames[ind])
         annotation_path = os.path.join(self.annotation_dir, self.annotation_filenames[ind])
         
         # Load the image
-        if (self.pretrained):
-            image = read_image(image_path)
-        else:
+        if (self.normalize):
             image = Image.open(image_path)
-            image = transform(image)
+            image = transform(image)            
+        else:
+            image = read_image(image_path)
+
         
         anno = ET.parse(annotation_path)
             
