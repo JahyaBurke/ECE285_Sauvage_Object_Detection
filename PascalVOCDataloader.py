@@ -76,10 +76,11 @@ class PascalVOCDataloader(Dataset):
         # Load the image
         if (self.normalize):
             image = Image.open(image_path)
+            width, height = image.size
             image = transform(image)            
         else:
             image = read_image(image_path)
-
+            width, height = False, False
         
         anno = ET.parse(annotation_path)
             
@@ -101,7 +102,10 @@ class PascalVOCDataloader(Dataset):
         label = np.stack(label).astype(np.int32)
 
         # Return the image and its label
-        return (image, bbox, label)
+        if (width == False):
+            return (image, bbox, label)
+        else:
+            return (image, bbox, label, height, width)
 
 def create_split_loaders(dataset, batch_size, seed=0, 
                          p_val=0.1, p_test=0.2, shuffle=True, 
