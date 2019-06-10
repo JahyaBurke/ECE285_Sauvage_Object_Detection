@@ -222,8 +222,6 @@ class Darknet(nn.Module):
                 anchors = self.module_list[i][0].anchors
                 #Get the input dimensions
                 inp_dim = int (self.net_info["height"])
-                
-                print(inp_dim)
         
                 #Get the number of classes
                 num_classes = int (module["classes"])
