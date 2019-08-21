@@ -1,4 +1,4 @@
-# Object Detection and Localization with YOLOv3 and Faster R-CNN
+# Object Detection with YOLOv3 and Faster R-CNN
 
 This repository contains our final project code for the UCSD course ECE 285: Machine Learning for Image Processing.
 
