@@ -71,7 +71,7 @@ python-editor==1.0.3
 python-oauth2==1.1.0
 pytz==2019.1
 PyWavelets==1.0.3
-PyYAML==3.13
+PyYAML==5.4
 pyzmq==17.1.2
 qtconsole==4.4.3
 requests==2.22.0
