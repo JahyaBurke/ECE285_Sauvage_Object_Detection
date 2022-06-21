@@ -47,7 +47,7 @@ nbformat==4.4.0
 nbresuse==0.2.0
 networkx==2.3
 notebook==5.7.4
-numpy==1.16.4
+numpy==1.22.0
 olefile==0.46
 pamela==1.0.0
 pandas==0.24.0
